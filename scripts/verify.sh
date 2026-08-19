@@ -21,6 +21,9 @@ else
   echo "no tests yet — skipping (M2 adds them)"
 fi
 
+step "frontend tests (CSV parser)"
+(cd frontend && npm test --silent) || fail=1
+
 step "frontend build (type-check + bundle)"
 (cd frontend && npm run build --silent) || fail=1
 

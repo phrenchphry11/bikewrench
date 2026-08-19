@@ -1,9 +1,11 @@
 """FastAPI entrypoint — Vercel Python serverless function."""
 
 from datetime import date
+from pathlib import Path
 from typing import Annotated, Literal
 
 from fastapi import FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from engine.report import build_report
@@ -54,3 +56,11 @@ def report(req: ReportRequest) -> dict:
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
+
+
+# On Vercel the FastAPI app serves the whole site (single-function model), so
+# mount the built SPA after the API routes; Vercel promotes these files to its
+# CDN at build time. Guarded so a backend-only local run still boots.
+_dist = Path(__file__).parent.parent / "frontend" / "dist"
+if _dist.is_dir():
+    app.mount("/", StaticFiles(directory=_dist, html=True), name="frontend")
