@@ -62,6 +62,26 @@ h1 {
   padding: 0.75rem 1rem;
 }
 
+.strava-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Strava brand orange; official button styling per brand guidelines */
+.strava-connect {
+  background: #fc5200;
+  border-color: #fc5200;
+  color: #fff;
+  font-weight: 600;
+}
+
+.strava-connect:hover {
+  background: #e34a00;
+}
+
 .sample-row {
   display: flex;
   align-items: center;
