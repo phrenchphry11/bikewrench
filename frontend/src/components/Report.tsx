@@ -2,6 +2,7 @@ import type { ComponentCard, Report as ReportData, Status } from '../lib/api'
 
 interface Props {
   report: ReportData
+  bikeLabel?: string | null
   onStartOver: () => void
   onWorkOrder: () => void
 }
@@ -46,7 +47,7 @@ function Card({ card }: { card: ComponentCard }) {
   )
 }
 
-export default function Report({ report, onStartOver, onWorkOrder }: Props) {
+export default function Report({ report, bikeLabel, onStartOver, onWorkOrder }: Props) {
   const attention = report.cards.filter((c) => c.status !== 'green').length
   return (
     <section className="report">
@@ -58,6 +59,7 @@ export default function Report({ report, onStartOver, onWorkOrder }: Props) {
         <div>
           <h2>{scoreWord(report.health_score)}</h2>
           <p className="muted">
+            {bikeLabel ? `${bikeLabel} · ` : ''}
             {report.ride_count.toLocaleString()} rides ·{' '}
             {Math.round(report.total_miles).toLocaleString()} miles ·{' '}
             {attention === 0 ? 'nothing needs attention' : `${attention} items need attention`}

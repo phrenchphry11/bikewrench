@@ -103,7 +103,10 @@ export async function freshTokens(tokens: StravaTokens): Promise<StravaTokens> {
   return renewed
 }
 
-export function mapActivities(activities: StravaActivity[]): ParseResult {
+export function mapActivities(
+  activities: StravaActivity[],
+  gearNames: Record<string, string> = {},
+): ParseResult {
   const rides = activities
     .filter((a) => RIDE_SPORT_TYPES.has(a.sport_type))
     .filter((a) => Number.isFinite(a.distance) && Number.isFinite(a.moving_time))
@@ -111,7 +114,7 @@ export function mapActivities(activities: StravaActivity[]): ParseResult {
       date: a.start_date_local.slice(0, 10),
       miles: a.distance * METERS_TO_MILES,
       hours: a.moving_time / 3600,
-      gear: a.gear_id ?? '',
+      gear: a.gear_id ? (gearNames[a.gear_id] ?? a.gear_id) : '',
     }))
   if (rides.length === 0) {
     throw new ActivitiesParseError(
@@ -122,6 +125,24 @@ export function mapActivities(activities: StravaActivity[]): ParseResult {
 }
 
 type Fetcher = typeof fetch
+
+/** gear_id -> human bike name, from the athlete profile. Best-effort: on any
+ * failure the raw gear ids still work as (ugly but stable) group keys. */
+export async function fetchGearNames(
+  accessToken: string,
+  fetcher: Fetcher = fetch,
+): Promise<Record<string, string>> {
+  try {
+    const res = await fetcher('https://www.strava.com/api/v3/athlete', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    if (!res.ok) return {}
+    const body = (await res.json()) as { bikes?: { id: string; name: string }[] }
+    return Object.fromEntries((body.bikes ?? []).map((b) => [b.id, b.name]))
+  } catch {
+    return {}
+  }
+}
 
 export async function fetchAllActivities(
   accessToken: string,

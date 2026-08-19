@@ -521,6 +521,38 @@ button.primary {
   color: var(--ink) !important;
 }
 
+/* Bike picker */
+
+.bike-picker h2 {
+  margin-bottom: 0.25rem;
+}
+
+.bike-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.bike-option {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: #fff;
+  border: 1px solid var(--muted);
+  border-radius: 12px;
+  text-align: left;
+}
+
+.bike-option:hover {
+  border-color: var(--accent);
+}
+
 /* Shop finder */
 
 .shop-finder {

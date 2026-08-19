@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
+import BikePicker from './components/BikePicker'
 import ConnectStrava from './components/ConnectStrava'
 import StravaBadge from './components/StravaBadge'
+import { filterToBike, needsBikePicker } from './lib/bikes'
 import DropZone from './components/DropZone'
 import Questions from './components/Questions'
 import Report from './components/Report'
@@ -10,6 +12,7 @@ import type { ParseResult } from './lib/parseActivities'
 import {
   exchangeCode,
   fetchAllActivities,
+  fetchGearNames,
   freshTokens,
   loadTokens,
   mapActivities,
@@ -20,6 +23,7 @@ import './App.css'
 type Step =
   | { name: 'upload' }
   | { name: 'importing' } // pulling rides from Strava
+  | { name: 'bikepick'; parsed: ParseResult } // multi-bike history: choose one
   | { name: 'questions'; parsed: ParseResult }
   | { name: 'loading'; parsed: ParseResult }
   | { name: 'report'; parsed: ParseResult; report: ReportData }
@@ -29,6 +33,13 @@ type Step =
 function App() {
   const [step, setStep] = useState<Step>({ name: 'upload' })
   const [viaStrava, setViaStrava] = useState(false)
+  const [bikeLabel, setBikeLabel] = useState<string | null>(null)
+
+  const proceedFromParse = (parsed: ParseResult) => {
+    setBikeLabel(null)
+    if (needsBikePicker(parsed.rides)) setStep({ name: 'bikepick', parsed })
+    else setStep({ name: 'questions', parsed })
+  }
 
   const runReport = async (parsed: ParseResult, answers: Answers) => {
     setStep({ name: 'loading', parsed })
@@ -70,9 +81,12 @@ function App() {
         const tokens = await exchangeCode(code!)
         saveTokens(tokens)
         const usable = await freshTokens(tokens)
-        const activities = await fetchAllActivities(usable.access_token)
+        const [activities, gearNames] = await Promise.all([
+          fetchAllActivities(usable.access_token),
+          fetchGearNames(usable.access_token),
+        ])
         setViaStrava(true)
-        setStep({ name: 'questions', parsed: mapActivities(activities) })
+        proceedFromParse(mapActivities(activities, gearNames))
       } catch (e) {
         setStep({
           name: 'error',
@@ -93,9 +107,12 @@ function App() {
       setStep({ name: 'importing' })
       try {
         const usable = await freshTokens(tokens)
-        const activities = await fetchAllActivities(usable.access_token)
+        const [activities, gearNames] = await Promise.all([
+          fetchAllActivities(usable.access_token),
+          fetchGearNames(usable.access_token),
+        ])
         setViaStrava(true)
-        setStep({ name: 'questions', parsed: mapActivities(activities) })
+        proceedFromParse(mapActivities(activities, gearNames))
       } catch {
         setStep({ name: 'upload' }) // stale session — fall back silently
       }
@@ -117,7 +134,7 @@ function App() {
           <DropZone
             onParsed={(parsed) => {
               setViaStrava(false)
-              setStep({ name: 'questions', parsed })
+              proceedFromParse(parsed)
             }}
           />
         </>
@@ -130,10 +147,21 @@ function App() {
         </div>
       )}
 
+      {step.name === 'bikepick' && (
+        <BikePicker
+          rides={step.parsed.rides}
+          onPick={(gear, label) => {
+            setBikeLabel(label)
+            setStep({ name: 'questions', parsed: filterToBike(step.parsed, gear) })
+          }}
+        />
+      )}
+
       {step.name === 'questions' && (
         <>
           <p className="muted">
-            Found {step.parsed.rides.length.toLocaleString()} rides — a few quick questions:
+            Found {step.parsed.rides.length.toLocaleString()} rides
+            {bikeLabel ? ` on ${bikeLabel}` : ''} — a few quick questions:
           </p>
           <Questions onSubmit={(answers) => void runReport(step.parsed, answers)} />
         </>
@@ -149,6 +177,7 @@ function App() {
       {step.name === 'report' && (
         <Report
           report={step.report}
+          bikeLabel={bikeLabel}
           onStartOver={() => setStep({ name: 'upload' })}
           onWorkOrder={() => setStep({ ...step, name: 'workorder' })}
         />
