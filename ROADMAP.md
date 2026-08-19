@@ -24,6 +24,6 @@ A review pause with the user happens at **every** milestone boundary.
 
 ## Later (v1+ — out of scope for v0)
 
-- **v1:** Strava OAuth, automatic ride import
+- **v1:** Strava OAuth, automatic ride import; per-bike reports via Activity Gear picker (`bikewrench-rm9` — gear column already parsed, no engine changes needed)
 - **v2:** Garmin / RideWithGPS / Wahoo integrations; native iOS with HealthKit + background sync; shop-side work-order view
 - Explicit v0 cutlines (binding): Garmin CSV, HealthKit, accounts & saved history, email reminders, multiple bikes, shop inventory/booking integration, component photo recognition
