@@ -48,6 +48,7 @@ def build_report(
     conditions: str,
     baselines: dict | None = None,
     as_of: str | None = None,
+    service_log: dict | None = None,
 ) -> dict:
     """rides: [{date: ISO str, miles: float, hours: float}], must be non-empty.
 
@@ -58,10 +59,17 @@ def build_report(
     earlier rides belong to a previous bike and are excluded entirely,
     and time-based wear starts there instead of at the first ride in
     the Strava history.
+
+    service_log: per-component "work was done" entries that reset wear —
+    {component_key: {"date": ISO str} | {"miles_ago": float}} for ANY
+    component in the wear table, time-based ones included. An entry takes
+    precedence over the questionnaire baselines (it is more specific and
+    more recent). "miles_ago" is ignored for months-unit components.
     """
     if not rides:
         raise ValueError("rides must be non-empty")
     baselines = baselines or {}
+    service_log = service_log or {}
 
     # Parse every ride date up front: bad dates fail fast and consistently,
     # and first/last ride are true date comparisons, not string ones.
@@ -84,11 +92,25 @@ def build_report(
 
     cards = []
     for component in wear.components_for(bike_type):
+        entry = service_log.get(component.key) or {}
+        serviced_date = entry.get("date")
+        serviced_miles_ago = entry.get("miles_ago")
         if component.unit == "miles":
-            used = _miles_used(component, rides, baselines)
+            if serviced_miles_ago is not None:
+                used = float(serviced_miles_ago)
+            elif serviced_date is not None:
+                used = miles_since(rides, serviced_date)
+            else:
+                used = _miles_used(component, rides, baselines)
         else:
-            used = history_months
-        cards.append(wear.component_status(component, used, conditions))
+            if serviced_date is not None:
+                used = months_between(serviced_date, now)
+            else:
+                used = history_months
+        card = wear.component_status(component, used, conditions)
+        if serviced_date is not None:
+            card["serviced_on"] = _parse_date(serviced_date).isoformat()
+        cards.append(card)
 
     cards.sort(key=lambda c: (_STATUS_ORDER[c["status"]], -c["pct_used"]))
 

@@ -279,6 +279,54 @@ class TestReviewFixes:
         tape = next(c for c in report["cards"] if c["key"] == "bar_tape")
         assert tape["used"] < 12
 
+    def test_service_log_resets_mileage_component_by_date(self):
+        rides = [ride("2026-01-01", 1000), ride("2026-06-01", 200)]
+        report = build_report(
+            rides, "road", "dry", service_log={"cassette": {"date": "2026-03-01"}}
+        )
+        cassette = next(c for c in report["cards"] if c["key"] == "cassette")
+        assert cassette["used"] == 200
+        assert cassette["serviced_on"] == "2026-03-01"
+
+    def test_service_log_miles_ago(self):
+        rides = [ride("2026-01-01", 5000)]
+        report = build_report(
+            rides, "road", "dry", service_log={"bottom_bracket": {"miles_ago": 100}}
+        )
+        bb = next(c for c in report["cards"] if c["key"] == "bottom_bracket")
+        assert bb["used"] == 100
+        assert "serviced_on" not in bb
+
+    def test_service_log_resets_time_component(self):
+        rides = [ride("2016-01-01", 100), ride("2026-06-01", 100)]
+        report = build_report(
+            rides, "road", "dry",
+            as_of="2026-08-01",
+            service_log={"bar_tape": {"date": "2026-06-01"}},
+        )
+        tape = next(c for c in report["cards"] if c["key"] == "bar_tape")
+        assert tape["used"] == pytest.approx(2, abs=0.1)  # ~2 months, not ~10 years
+        assert tape["status"] == wear.GREEN
+
+    def test_service_log_beats_questionnaire_baseline(self):
+        rides = [ride("2026-01-01", 1000), ride("2026-06-01", 200)]
+        report = build_report(
+            rides, "road", "dry",
+            baselines={"chain_miles_ago": 900},
+            service_log={"chain": {"date": "2026-03-01"}},
+        )
+        chain = next(c for c in report["cards"] if c["key"] == "chain")
+        assert chain["used"] == 200  # log wins over the 900 baseline
+
+    def test_service_log_unknown_keys_and_miles_ago_on_time_unit_ignored(self):
+        rides = [ride("2016-01-01", 100), ride("2026-06-01", 100)]
+        report = build_report(
+            rides, "road", "dry",
+            service_log={"flux_capacitor": {"date": "2026-01-01"}, "sealant": {"miles_ago": 5}},
+        )
+        # No sealant on road; unknown key ignored; nothing blows up.
+        assert report["cards"]
+
     def test_bike_date_after_all_rides_raises(self):
         with pytest.raises(ValueError):
             build_report(

@@ -397,6 +397,14 @@ button.primary {
   font-size: 0.9rem;
 }
 
+.serviced {
+  color: var(--green);
+}
+
+.card-serviced-btn {
+  margin-top: 0.5rem;
+}
+
 .report-actions {
   display: flex;
   flex-direction: column;

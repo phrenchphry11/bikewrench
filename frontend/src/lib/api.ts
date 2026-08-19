@@ -28,7 +28,10 @@ export interface ComponentCard {
   pct_used: number
   status: Status
   explanation: string
+  serviced_on?: string
 }
+
+export type ServiceLogPayload = Record<string, { date: string }>
 
 export interface Report {
   health_score: number
@@ -41,7 +44,11 @@ export interface Report {
   cards: ComponentCard[]
 }
 
-export async function fetchReport(rides: RideSummary[], answers: Answers): Promise<Report> {
+export async function fetchReport(
+  rides: RideSummary[],
+  answers: Answers,
+  serviceLog: ServiceLogPayload = {},
+): Promise<Report> {
   const res = await fetch('/api/report', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,6 +57,7 @@ export async function fetchReport(rides: RideSummary[], answers: Answers): Promi
       bike_type: answers.bikeType,
       conditions: answers.conditions,
       baselines: answers.baselines,
+      service_log: serviceLog,
     }),
   })
   if (!res.ok) {

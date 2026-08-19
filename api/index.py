@@ -38,12 +38,21 @@ class Baselines(BaseModel):
     bike_date: str | None = Field(default=None, max_length=64)
 
 
+class ServiceEntry(BaseModel):
+    """One 'work was done' record; date XOR miles_ago."""
+
+    date: str | None = Field(default=None, max_length=64)
+    miles_ago: Miles | None = None
+
+
 class ReportRequest(BaseModel):
     # A decade of daily riding is ~4k rides; 50k bounds serverless CPU.
     rides: list[Ride] = Field(max_length=50_000)
     bike_type: Literal["road", "gravel", "mtb"]
     conditions: Literal["dry", "mixed", "wet"]
     baselines: Baselines = Baselines()
+    # Keyed by wear-table component key; unknown keys are ignored.
+    service_log: dict[str, ServiceEntry] = Field(default_factory=dict)
 
 
 @app.post("/api/report")
@@ -55,6 +64,9 @@ def report(req: ReportRequest) -> dict:
             conditions=req.conditions,
             baselines=req.baselines.model_dump(exclude_none=True),
             as_of=date.today().isoformat(),
+            service_log={
+                k: v.model_dump(exclude_none=True) for k, v in req.service_log.items()
+            },
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))

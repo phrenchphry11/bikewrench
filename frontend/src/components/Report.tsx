@@ -5,6 +5,7 @@ interface Props {
   bikeLabel?: string | null
   onStartOver: () => void
   onWorkOrder: () => void
+  onMarkServiced: (componentKey: string) => void
 }
 
 const STATUS_LABEL: Record<Status, string> = {
@@ -28,7 +29,7 @@ function formatInterval(card: ComponentCard): string {
   return `${Math.round(card.used).toLocaleString()} of ${range} ${unit}`
 }
 
-function Card({ card }: { card: ComponentCard }) {
+function Card({ card, onMarkServiced }: { card: ComponentCard; onMarkServiced: () => void }) {
   const pct = Math.min(card.pct_used, 1)
   return (
     <li className={`card ${card.status}`}>
@@ -41,13 +42,25 @@ function Card({ card }: { card: ComponentCard }) {
       </div>
       <p className="card-usage">
         {formatInterval(card)} · {Math.round(card.pct_used * 100)}% used
+        {card.serviced_on && <span className="serviced"> · serviced {card.serviced_on}</span>}
       </p>
       <p className="card-why">{card.explanation}</p>
+      {card.status !== 'green' && (
+        <button type="button" className="linklike card-serviced-btn" onClick={onMarkServiced}>
+          I replaced / serviced this
+        </button>
+      )}
     </li>
   )
 }
 
-export default function Report({ report, bikeLabel, onStartOver, onWorkOrder }: Props) {
+export default function Report({
+  report,
+  bikeLabel,
+  onStartOver,
+  onWorkOrder,
+  onMarkServiced,
+}: Props) {
   const attention = report.cards.filter((c) => c.status !== 'green').length
   return (
     <section className="report">
@@ -69,7 +82,7 @@ export default function Report({ report, bikeLabel, onStartOver, onWorkOrder }: 
 
       <ul className="cards">
         {report.cards.map((card) => (
-          <Card key={card.key} card={card} />
+          <Card key={card.key} card={card} onMarkServiced={() => onMarkServiced(card.key)} />
         ))}
       </ul>
 

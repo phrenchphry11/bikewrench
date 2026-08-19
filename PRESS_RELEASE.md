@@ -1,8 +1,6 @@
 # Bike Health Report: a shop-ready service report in 60 seconds
 
-**Drop in the ride data you already have. Get a health score, a plain-language
-wear report, and a work order your local bike shop can act on — before your
-next ride.**
+**Drop in the ride data you already have. Get a health score, a plain-language wear report, and a work order your local bike shop can act on - before you're stranded on the side of the road with a flat tire.**
 
 ## The problem
 

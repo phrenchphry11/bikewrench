@@ -3,6 +3,7 @@ import BikePicker from './components/BikePicker'
 import ConnectStrava from './components/ConnectStrava'
 import StravaBadge from './components/StravaBadge'
 import { filterToBike, needsBikePicker } from './lib/bikes'
+import { loadServiceLog, recordService } from './lib/serviceLog'
 import DropZone from './components/DropZone'
 import Questions from './components/Questions'
 import Report from './components/Report'
@@ -26,8 +27,8 @@ type Step =
   | { name: 'bikepick'; parsed: ParseResult } // multi-bike history: choose one
   | { name: 'questions'; parsed: ParseResult }
   | { name: 'loading'; parsed: ParseResult }
-  | { name: 'report'; parsed: ParseResult; report: ReportData }
-  | { name: 'workorder'; parsed: ParseResult; report: ReportData }
+  | { name: 'report'; parsed: ParseResult; report: ReportData; answers: Answers }
+  | { name: 'workorder'; parsed: ParseResult; report: ReportData; answers: Answers }
   | { name: 'error'; parsed: ParseResult | null; message: string }
 
 function App() {
@@ -44,8 +45,8 @@ function App() {
   const runReport = async (parsed: ParseResult, answers: Answers) => {
     setStep({ name: 'loading', parsed })
     try {
-      const report = await fetchReport(parsed.rides, answers)
-      setStep({ name: 'report', parsed, report })
+      const report = await fetchReport(parsed.rides, answers, loadServiceLog(bikeLabel))
+      setStep({ name: 'report', parsed, report, answers })
     } catch (e) {
       setStep({
         name: 'error',
@@ -180,6 +181,10 @@ function App() {
           bikeLabel={bikeLabel}
           onStartOver={() => setStep({ name: 'upload' })}
           onWorkOrder={() => setStep({ ...step, name: 'workorder' })}
+          onMarkServiced={(componentKey) => {
+            recordService(bikeLabel, componentKey, new Date().toISOString().slice(0, 10))
+            void runReport(step.parsed, step.answers)
+          }}
         />
       )}
 
