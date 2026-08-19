@@ -2,6 +2,7 @@ import { useState } from 'react'
 import DropZone from './components/DropZone'
 import Questions from './components/Questions'
 import Report from './components/Report'
+import WorkOrder from './components/WorkOrder'
 import { fetchReport, type Answers, type Report as ReportData } from './lib/api'
 import type { ParseResult } from './lib/parseActivities'
 import './App.css'
@@ -11,6 +12,7 @@ type Step =
   | { name: 'questions'; parsed: ParseResult }
   | { name: 'loading'; parsed: ParseResult }
   | { name: 'report'; parsed: ParseResult; report: ReportData }
+  | { name: 'workorder'; parsed: ParseResult; report: ReportData }
   | { name: 'error'; parsed: ParseResult; message: string }
 
 function App() {
@@ -32,8 +34,10 @@ function App() {
 
   return (
     <main className="app">
-      <h1>Bike Health Report</h1>
-      <p className="tagline">A shop-ready service report in 60 seconds, from the ride data you already have.</p>
+      <div className="no-print">
+        <h1>Bike Health Report</h1>
+        <p className="tagline">A shop-ready service report in 60 seconds, from the ride data you already have.</p>
+      </div>
 
       {step.name === 'upload' && <DropZone onParsed={(parsed) => setStep({ name: 'questions', parsed })} />}
 
@@ -49,7 +53,18 @@ function App() {
       {step.name === 'loading' && <p className="muted">Checking your components…</p>}
 
       {step.name === 'report' && (
-        <Report report={step.report} onStartOver={() => setStep({ name: 'upload' })} />
+        <Report
+          report={step.report}
+          onStartOver={() => setStep({ name: 'upload' })}
+          onWorkOrder={() => setStep({ ...step, name: 'workorder' })}
+        />
+      )}
+
+      {step.name === 'workorder' && (
+        <WorkOrder
+          report={step.report}
+          onBack={() => setStep({ ...step, name: 'report' })}
+        />
       )}
 
       {step.name === 'error' && (

@@ -308,3 +308,148 @@ button.primary {
   margin: 0.4rem 0 0;
   font-size: 0.9rem;
 }
+
+.report-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Work order */
+
+.wo-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.wo-actions .primary {
+  flex: 1;
+  width: auto;
+}
+
+.wo-sheet {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.wo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  gap: 1rem;
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.wo-header h2 {
+  margin: 0;
+}
+
+.wo-sub,
+.wo-meta p {
+  margin: 0.15rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.wo-meta {
+  text-align: right;
+}
+
+.wo-intro {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.wo-section {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.overdue-h {
+  color: var(--red);
+}
+
+.due-h {
+  color: var(--amber);
+}
+
+.wo-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.wo-list li {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--bg);
+}
+
+.wo-box {
+  flex-shrink: 0;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  margin-top: 0.15rem;
+}
+
+.wo-detail {
+  margin: 0.15rem 0 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.wo-clear {
+  padding: 1rem 0;
+}
+
+.wo-footer {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.wo-line {
+  display: inline-block;
+  width: 60%;
+  border-bottom: 1px solid var(--muted);
+}
+
+.wo-credit {
+  margin-top: 1rem;
+  font-size: 0.75rem;
+}
+
+/* Print: the work-order sheet is the entire page */
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .app {
+    max-width: none;
+    padding: 0;
+  }
+
+  .wo-sheet {
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .wo-box {
+    border-color: #000;
+  }
+}

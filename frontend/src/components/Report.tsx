@@ -3,6 +3,7 @@ import type { ComponentCard, Report as ReportData, Status } from '../lib/api'
 interface Props {
   report: ReportData
   onStartOver: () => void
+  onWorkOrder: () => void
 }
 
 const STATUS_LABEL: Record<Status, string> = {
@@ -45,7 +46,7 @@ function Card({ card }: { card: ComponentCard }) {
   )
 }
 
-export default function Report({ report, onStartOver }: Props) {
+export default function Report({ report, onStartOver, onWorkOrder }: Props) {
   const attention = report.cards.filter((c) => c.status !== 'green').length
   return (
     <section className="report">
@@ -70,7 +71,12 @@ export default function Report({ report, onStartOver }: Props) {
         ))}
       </ul>
 
-      <button onClick={onStartOver}>Start over</button>
+      <div className="report-actions">
+        <button className="primary" onClick={onWorkOrder}>
+          Get your Shop Work Order
+        </button>
+        <button onClick={onStartOver}>Start over</button>
+      </div>
     </section>
   )
 }
