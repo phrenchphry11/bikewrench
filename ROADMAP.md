@@ -25,5 +25,5 @@ A review pause with the user happens at **every** milestone boundary.
 ## Later (v1+ — out of scope for v0)
 
 - **v1:** ~~Strava OAuth, automatic ride import~~ (shipped Aug 2026 — S1–S3); per-bike reports via Activity Gear picker (`bikewrench-rm9` — gear column already parsed, no engine changes needed); local bike shop finder with hours/contact info (`bikewrench-y90` — from the spec's one-liner, pairs with the Shop Work Order); service log — mark work done, reset wear for future reports (`bikewrench-iu8` — includes generalizing engine baselines to all components)
-- **v2:** Garmin / RideWithGPS / Wahoo integrations; native iOS with HealthKit + background sync; shop-side work-order view
+- **v2:** Garmin / RideWithGPS / Wahoo integrations; native iOS with HealthKit + background sync; shop-side work-order view; server-side service log & saved history keyed by Strava ID (`bikewrench-68e` — revisits the accounts cutline)
 - Explicit v0 cutlines (binding): Garmin CSV, HealthKit, accounts & saved history, email reminders, multiple bikes, shop inventory/booking integration, component photo recognition
