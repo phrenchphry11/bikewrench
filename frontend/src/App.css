@@ -516,6 +516,78 @@ button.primary {
   font-size: 0.75rem;
 }
 
+.wo-shop {
+  margin-top: 0.35rem !important;
+  color: var(--ink) !important;
+}
+
+/* Shop finder */
+
+.shop-finder {
+  margin-top: 1.5rem;
+  background: #fff;
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.shop-finder h3 {
+  margin: 0 0 0.75rem;
+}
+
+.manual-loc {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.manual-loc input {
+  font: inherit;
+  flex: 1;
+  padding: 0.5rem;
+  border: 1px solid var(--muted);
+  border-radius: 8px;
+  min-height: 44px;
+}
+
+.shop-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.shop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--bg);
+  border-left: 3px solid transparent;
+}
+
+.shop.selected {
+  border-left-color: var(--accent);
+  background: #fff7f2;
+}
+
+.shop-main p {
+  margin: 0.1rem 0 0;
+  font-size: 0.85rem;
+}
+
+.shop-hours {
+  font-variant-numeric: tabular-nums;
+}
+
+.shop-links {
+  display: flex;
+  gap: 1rem;
+}
+
+.shop-links a {
+  color: var(--accent);
+}
+
 /* Print: the work-order sheet is the entire page */
 
 @media print {
