@@ -1,7 +1,11 @@
 """FastAPI entrypoint — Vercel Python serverless function."""
 
-from fastapi import FastAPI
+from datetime import date
+
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+
+from engine.report import build_report
 
 app = FastAPI(title="Bike Health Report API")
 
@@ -31,12 +35,13 @@ class ReportRequest(BaseModel):
 
 @app.post("/api/report")
 def report(req: ReportRequest) -> dict:
-    # M2 wires this to the wear engine; for now echo the totals so the pipe works.
-    total_miles = sum(r.miles for r in req.rides)
-    total_hours = sum(r.hours for r in req.rides)
-    return {
-        "status": "stub",
-        "ride_count": len(req.rides),
-        "total_miles": round(total_miles, 1),
-        "total_hours": round(total_hours, 1),
-    }
+    try:
+        return build_report(
+            rides=[r.model_dump() for r in req.rides],
+            bike_type=req.bike_type,
+            conditions=req.conditions,
+            baselines=req.baselines.model_dump(exclude_none=True),
+            as_of=date.today().isoformat(),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
