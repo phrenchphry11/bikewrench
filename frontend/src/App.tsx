@@ -114,18 +114,28 @@ function App() {
         </>
       )}
 
-      {step.name === 'importing' && <p className="muted">Pulling your rides from Strava…</p>}
+      {step.name === 'importing' && (
+        <div className="busy">
+          <span className="spinner" aria-hidden="true" />
+          <p className="muted">Pulling your rides from Strava…</p>
+        </div>
+      )}
 
       {step.name === 'questions' && (
         <>
           <p className="muted">
-            Found {step.parsed.rides.length.toLocaleString()} rides — three quick questions:
+            Found {step.parsed.rides.length.toLocaleString()} rides — a few quick questions:
           </p>
           <Questions onSubmit={(answers) => void runReport(step.parsed, answers)} />
         </>
       )}
 
-      {step.name === 'loading' && <p className="muted">Checking your components…</p>}
+      {step.name === 'loading' && (
+        <div className="busy">
+          <span className="spinner" aria-hidden="true" />
+          <p className="muted">Checking your components…</p>
+        </div>
+      )}
 
       {step.name === 'report' && (
         <Report

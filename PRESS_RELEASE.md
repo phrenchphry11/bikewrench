@@ -19,7 +19,7 @@ Bike Health Report turns that existing ride data into answers in three steps:
 
 1. **Drop in your Strava export** — the `activities.csv` every Strava account
    can already download. No sign-up, no OAuth, no waiting.
-2. **Answer three questions** — what kind of bike, what conditions you ride in,
+2. **Answer a few quick questions** — what kind of bike, what conditions you ride in,
    and (if you happen to know) when the chain or tires were last replaced.
    "Not sure" is a fine answer.
 3. **Get your report** — an overall health score and a card for every wearing
