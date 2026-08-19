@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "bikewrench",
+  "project_id": "81e93097-c60f-495f-9499-077a42f328ec"
+}
