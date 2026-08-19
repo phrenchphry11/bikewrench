@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bike Health Report — Press Release</title>
+<style>
+  @page { size: Letter; margin: 0; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --orange: #e05d26;
+    --orange-deep: #b84a1c;
+    --ink: #1e2430;
+    --muted: #5b6472;
+    --paper: #faf8f5;
+    --rule: #e8e3db;
+  }
+  html, body { background: var(--paper); }
+  body {
+    font-family: 'Avenir Next', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: var(--ink);
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+  .page {
+    width: 8.5in;
+    height: 10.96in;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Masthead */
+  .masthead {
+    background: linear-gradient(135deg, var(--orange) 0%, var(--orange-deep) 100%);
+    color: #fff;
+    padding: 0.42in 0.85in 0.38in;
+  }
+  .kicker {
+    font-size: 8pt;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    opacity: 0.85;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+  }
+  h1 {
+    font-size: 24pt;
+    line-height: 1.12;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    max-width: 6.4in;
+  }
+  h1 .accent { color: #ffd9c4; }
+  .dek {
+    margin-top: 11px;
+    font-size: 11pt;
+    line-height: 1.5;
+    font-weight: 500;
+    max-width: 6.6in;
+    opacity: 0.96;
+  }
+
+  /* Body */
+  .body {
+    padding: 0.3in 0.85in 0.2in;
+    flex: 1;
+  }
+  h2 {
+    font-size: 9pt;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin: 15px 0 7px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  h2:first-child { margin-top: 0; }
+  h2::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--rule);
+  }
+  p { margin-bottom: 9px; max-width: 6.9in; }
+  strong { font-weight: 700; }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 28px;
+  }
+
+  /* Steps */
+  .steps {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin: 12px 0 4px;
+  }
+  .step {
+    background: #fff;
+    border: 1px solid var(--rule);
+    border-top: 3px solid var(--orange);
+    border-radius: 8px;
+    padding: 10px 13px 11px;
+  }
+  .step .num {
+    font-size: 17pt;
+    font-weight: 700;
+    color: var(--orange);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .step h3 { font-size: 10.5pt; margin-bottom: 4px; }
+  .step p { font-size: 9pt; color: var(--muted); margin: 0; line-height: 1.45; }
+
+  .callout {
+    background: #fff;
+    border-left: 4px solid var(--orange);
+    border-radius: 0 8px 8px 0;
+    padding: 11px 16px;
+    margin: 10px 0 4px;
+    font-size: 10pt;
+  }
+
+  /* Roadmap */
+  .roadmap { list-style: none; margin-top: 4px; }
+  .roadmap li {
+    padding: 5px 0 5px 20px;
+    position: relative;
+    border-bottom: 1px solid var(--rule);
+    font-size: 9.5pt;
+  }
+  .roadmap li:last-child { border-bottom: none; }
+  .roadmap li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--orange);
+    font-weight: 700;
+  }
+
+  /* Footer */
+  .footer {
+    padding: 0.16in 0.85in 0.22in;
+    border-top: 3px solid var(--orange);
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 8.5pt;
+    color: var(--muted);
+  }
+  .footer .url {
+    font-weight: 700;
+    color: var(--orange);
+    font-size: 10.5pt;
+  }
+  .bike { font-size: 12pt; }
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="masthead">
+    <div class="kicker"><span>Press Release</span><span>August 2026</span></div>
+    <h1>A shop-ready bike service report <span class="accent">in 60 seconds</span></h1>
+    <p class="dek">Use the ride data you already have. Get a bike maintenance score, a
+    plain-language wear report, and a work order your local bike shop can act on —
+    before you're stranded on the side of the road with a flat tire.</p>
+  </div>
+
+  <div class="body">
+    <h2>The problem</h2>
+    <div class="two-col">
+      <p>Strava knows your miles, but it doesn't know the state of your bike. It tracks
+      your rides but doesn't monitor component wear. The mileage data is right there —
+      riders can see 3,432 miles on a bike — but Strava never warns you that your brake
+      pads are rubbing away with only a few miles left.</p>
+      <p>Strava is a social product, with little focus on a huge part of the rider
+      experience: bike maintenance. On top of that, fitness enthusiasts have
+      subscription fatigue — nobody wants yet another subscription just to know when to
+      take their bike to the shop. We're changing that with a lightweight app — and
+      enabling local bike shops to win while we do it.</p>
+    </div>
+
+    <h2>The solution</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <h3>Drop in your Strava data</h3>
+        <p>No manual data entry. Connect your account or drop in the export you already
+        have.</p>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <h3>Answer a few quick questions</h3>
+        <p>What kind of bike, what conditions you ride in, and — if you know — when the
+        chain or tires were last replaced.</p>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <h3>Get your report</h3>
+        <p>An overall health score and a card for every wearing component, sorted by
+        urgency, with the mileage evidence behind each.</p>
+      </div>
+    </div>
+    <p style="font-size: 9.5pt; color: var(--muted);">Wear estimates adjust to your
+    actual mileage and riding conditions — wet-weather riding shortens component life,
+    and the report knows it.</p>
+
+    <h2>Why local bike shops win</h2>
+    <p>The report's final step is the differentiator. Riders find nearby bike shops in
+    the app and generate a one-click <strong>Shop Work Order</strong> — a printable
+    checklist for the mechanic, grouping what's likely due now and what to keep an eye
+    on.</p>
+    <div class="callout">Customers walk in knowing what they need — and the mechanic
+    gets a digestible list of the bike's status instead of a vague
+    "can&nbsp;you&nbsp;look&nbsp;it&nbsp;over?"</div>
+
+    <h2>What's next</h2>
+    <ul class="roadmap">
+      <li><strong>Native iOS app with HealthKit and background sync.</strong> Reports
+      stay current automatically, with notifications when work is overdue — no manual
+      sync step at all.</li>
+      <li><strong>Garmin and Wahoo export support.</strong> Not all riders use Strava,
+      and we'll meet them where they are.</li>
+      <li><strong>Shop-side view.</strong> Shops receive work orders ahead of the
+      visit and make sure the parts are in stock before the bike arrives.</li>
+    </ul>
+  </div>
+
+  <div class="footer">
+    <span class="url">bikewrench.hollyafrench.com</span>
+    <span>No accounts · no stored data · your rides go in, your report comes out
+    <span class="bike">&nbsp;🚲</span></span>
+  </div>
+</div>
+</body>
+</html>
