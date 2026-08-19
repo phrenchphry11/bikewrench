@@ -49,7 +49,9 @@ export function authorizeUrl(clientId: string): string {
     redirect_uri: `${window.location.origin}/`,
     response_type: 'code',
     approval_prompt: 'auto',
-    scope: 'activity:read',
+    // profile:read_all is needed for the athlete's bike names (gear ids ->
+    // "Marin Gestalt"); without it the bikes list comes back empty.
+    scope: 'activity:read,profile:read_all',
   })
   return `https://www.strava.com/oauth/authorize?${params}`
 }
