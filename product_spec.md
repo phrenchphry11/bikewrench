@@ -47,7 +47,7 @@ v2: Future integrations with Garmin, RideWithGPS, etc.
   multiplier. Output per component: miles used, interval, status, one-line
   explanation. Unit-testable, no UI dependency.
 - **M3 — Report UI (30 min):** Health score header, urgency-sorted component
-  cards, friendly copy. Mobile-first — John will open this on his phone.
+  cards, friendly copy. Mobile-first — Assume user will open this on their phone.
 - **M4 — Shop Work Order (20 min):** Print-styled checklist view. "Show this
   to your shop." This is the differentiator moment.
 - **M5 — Polish (20 min):** Empty states, error handling for weird CSVs,
