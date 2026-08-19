@@ -45,11 +45,9 @@ function Card({ card, onMarkServiced }: { card: ComponentCard; onMarkServiced: (
         {card.serviced_on && <span className="serviced"> · serviced {card.serviced_on}</span>}
       </p>
       <p className="card-why">{card.explanation}</p>
-      {card.status !== 'green' && (
-        <button type="button" className="linklike card-serviced-btn" onClick={onMarkServiced}>
-          I replaced / serviced this
-        </button>
-      )}
+      <button type="button" className="linklike card-serviced-btn" onClick={onMarkServiced}>
+        {card.status === 'green' ? 'Serviced this anyway? Mark it' : 'I replaced / serviced this'}
+      </button>
     </li>
   )
 }
