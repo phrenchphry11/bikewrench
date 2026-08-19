@@ -25,11 +25,36 @@ const RIDE_TYPES = new Set(['Ride', 'Gravel Ride', 'Mountain Bike Ride', 'E-Bike
 
 const KM_TO_MILES = 0.621371
 
+function toLocalIsoDate(d: Date): string {
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
 function parseStravaDate(raw: string): string | null {
-  // Strava format: "Jan 5, 2024, 8:15:03 AM"
+  // Strava format: "Jan 5, 2024, 8:15:03 AM" — local time with no offset, so
+  // format with local components; toISOString() would shift the date for
+  // viewers ahead of UTC.
   const d = new Date(raw)
   if (isNaN(d.getTime())) return null
-  return d.toISOString().slice(0, 10)
+  return toLocalIsoDate(d)
+}
+
+/** Shift all ride dates forward so the newest ride is today (spacing kept).
+ * Keeps the bundled sample demo evergreen instead of aging into "overdue". */
+export function shiftRidesToToday(result: ParseResult): ParseResult {
+  const times = result.rides.map((r) => new Date(`${r.date}T00:00:00`).getTime())
+  const newest = Math.max(...times)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const offsetDays = Math.round((today.getTime() - newest) / 86_400_000)
+  if (offsetDays <= 0) return result
+  const rides = result.rides.map((r) => {
+    const d = new Date(`${r.date}T00:00:00`)
+    d.setDate(d.getDate() + offsetDays)
+    return { ...r, date: toLocalIsoDate(d) }
+  })
+  return { ...result, rides }
 }
 
 export function parseActivitiesCsv(csvText: string): ParseResult {

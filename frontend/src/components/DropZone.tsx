@@ -1,5 +1,10 @@
 import { useCallback, useRef, useState } from 'react'
-import { parseActivitiesCsv, ActivitiesParseError, type ParseResult } from '../lib/parseActivities'
+import {
+  parseActivitiesCsv,
+  shiftRidesToToday,
+  ActivitiesParseError,
+  type ParseResult,
+} from '../lib/parseActivities'
 import sampleCsv from '../sample/activities.csv?raw'
 
 interface Props {
@@ -63,11 +68,15 @@ export default function DropZone({ onParsed }: Props) {
         <button
           type="button"
           onClick={() => {
+            let parsed: ParseResult
             try {
-              onParsed(parseActivitiesCsv(sampleCsv))
-            } catch {
+              parsed = shiftRidesToToday(parseActivitiesCsv(sampleCsv))
+            } catch (e) {
+              console.error('bundled sample data failed to parse:', e)
               setError('The bundled sample data failed to load — please report this.')
+              return
             }
+            onParsed(parsed)
           }}
         >
           Try with sample data

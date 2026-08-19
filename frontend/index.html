@@ -2,11 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚲</text></svg>" />
+    <!-- PNG first: Safari/iOS don't render SVG favicons -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🚲</text></svg>" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Keep in sync with the tagline in src/App.tsx -->
     <meta
       name="description"
-      content="A shop-ready bike service report in 60 seconds, from the Strava ride data you already have."
+      content="A shop-ready service report in 60 seconds, from the ride data you already have."
     />
     <title>Bike Health Report</title>
   </head>
