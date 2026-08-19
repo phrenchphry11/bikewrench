@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import ConnectStrava from './components/ConnectStrava'
+import StravaBadge from './components/StravaBadge'
 import DropZone from './components/DropZone'
 import Questions from './components/Questions'
 import Report from './components/Report'
@@ -27,6 +28,7 @@ type Step =
 
 function App() {
   const [step, setStep] = useState<Step>({ name: 'upload' })
+  const [viaStrava, setViaStrava] = useState(false)
 
   const runReport = async (parsed: ParseResult, answers: Answers) => {
     setStep({ name: 'loading', parsed })
@@ -69,6 +71,7 @@ function App() {
         saveTokens(tokens)
         const usable = await freshTokens(tokens)
         const activities = await fetchAllActivities(usable.access_token)
+        setViaStrava(true)
         setStep({ name: 'questions', parsed: mapActivities(activities) })
       } catch (e) {
         setStep({
@@ -91,6 +94,7 @@ function App() {
       try {
         const usable = await freshTokens(tokens)
         const activities = await fetchAllActivities(usable.access_token)
+        setViaStrava(true)
         setStep({ name: 'questions', parsed: mapActivities(activities) })
       } catch {
         setStep({ name: 'upload' }) // stale session — fall back silently
@@ -110,7 +114,12 @@ function App() {
       {step.name === 'upload' && (
         <>
           <ConnectStrava />
-          <DropZone onParsed={(parsed) => setStep({ name: 'questions', parsed })} />
+          <DropZone
+            onParsed={(parsed) => {
+              setViaStrava(false)
+              setStep({ name: 'questions', parsed })
+            }}
+          />
         </>
       )}
 
@@ -163,6 +172,15 @@ function App() {
             <button onClick={() => setStep({ name: 'upload' })}>Back to start</button>
           )}
         </>
+      )}
+
+      {viaStrava && step.name !== 'upload' && (
+        <StravaBadge
+          onDisconnected={() => {
+            setViaStrava(false)
+            setStep({ name: 'upload' })
+          }}
+        />
       )}
     </main>
   )
