@@ -54,6 +54,8 @@ bd close <id>         # Complete work
 ## Source of Truth
 
 `product_spec.md` in the repo root is the product source of truth (Bike Health Report v0).
+`ROADMAP.md` lists every milestone (M0–M5, press release, deploy), its bd issue, and the
+v1+/later items — read it to see where the build stands and what comes next.
 Its cutlines are binding: no Garmin CSV, no HealthKit, no accounts/history, no email
 reminders, no multiple bikes, no shop integrations, no photo recognition, no Strava
 OAuth in v0.
