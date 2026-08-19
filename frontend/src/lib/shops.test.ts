@@ -84,9 +84,28 @@ describe('fetchNearbyShops', () => {
     expect(sentBody).toContain('40')
   })
 
-  it('maps service errors to a friendly message', async () => {
-    const fetcher = (async () => new Response('', { status: 504 })) as typeof fetch
+  it('falls through rate-limited mirrors to a working one', async () => {
+    const tried: string[] = []
+    const fetcher = (async (url: unknown) => {
+      tried.push(String(url))
+      if (tried.length === 1) return new Response('', { status: 406 })
+      if (tried.length === 2) throw new TypeError('network error')
+      return new Response(JSON.stringify({ elements: [el()] }), { status: 200 })
+    }) as typeof fetch
+    const shops = await fetchNearbyShops(ORIGIN, fetcher)
+    expect(shops).toHaveLength(1)
+    expect(tried).toHaveLength(3)
+    expect(new Set(tried).size).toBe(3) // three distinct mirrors
+  })
+
+  it('friendly error only after every mirror fails', async () => {
+    let calls = 0
+    const fetcher = (async () => {
+      calls++
+      return new Response('', { status: 504 })
+    }) as typeof fetch
     await expect(fetchNearbyShops(ORIGIN, fetcher)).rejects.toThrow(/busy/)
+    expect(calls).toBe(3)
   })
 })
 

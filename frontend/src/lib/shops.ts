@@ -17,7 +17,14 @@ export interface BikeShop {
   hours: string | null
 }
 
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter'
+// Public Overpass instances, tried in order — the main one rate-limits
+// anonymous use aggressively, so a single 4xx/network failure falls through
+// to the next mirror instead of failing the search.
+const OVERPASS_MIRRORS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.private.coffee/api/interpreter',
+]
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search'
 const RADIUS_METERS = 10_000 // ~6 miles
 const MAX_SHOPS = 8
@@ -103,14 +110,20 @@ export function mapOverpassShops(elements: OverpassElement[], origin: Coords): B
 
 export async function fetchNearbyShops(origin: Coords, fetcher: Fetcher = fetch): Promise<BikeShop[]> {
   const query = `[out:json][timeout:15];nwr["shop"="bicycle"](around:${RADIUS_METERS},${origin.lat},${origin.lon});out center tags;`
-  const res = await fetcher(OVERPASS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({ data: query }),
-  })
-  if (!res.ok) {
-    throw new Error('The shop lookup service is busy — try again in a minute.')
+  for (const mirror of OVERPASS_MIRRORS) {
+    let res: Response
+    try {
+      res = await fetcher(mirror, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ data: query }),
+      })
+    } catch {
+      continue // network/CORS failure — try the next mirror
+    }
+    if (!res.ok) continue // rate-limited or unhappy mirror — try the next
+    const body = (await res.json()) as { elements?: OverpassElement[] }
+    return mapOverpassShops(body.elements ?? [], origin)
   }
-  const body = (await res.json()) as { elements?: OverpassElement[] }
-  return mapOverpassShops(body.elements ?? [], origin)
+  throw new Error('The shop lookup services are all busy — try again in a few minutes.')
 }
