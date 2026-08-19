@@ -15,6 +15,13 @@ A review pause with the user happens at **every** milestone boundary.
 | M5 | Polish | `bikewrench-mlb` | 20 min | "Try with sample data" button (**non-negotiable**), friendly errors for weird CSVs, empty states, favicon, product name |
 | — | Deploy | `bikewrench-1a2` | — | Vercel: static frontend + Python function, `/api/*` rewrite; verify live link end-to-end at phone viewport |
 
+## Quality gates & reviews (agreed with user)
+
+- `./scripts/verify.sh` (the `/verify` skill) runs at every milestone boundary and
+  before closing any bd issue that touched code: pytest + frontend build + API smoke test.
+- `/code-review` after M2 (wear engine) and again before deploy.
+- `/security-review` before deploy.
+
 ## Later (v1+ — out of scope for v0)
 
 - **v1:** Strava OAuth, automatic ride import
