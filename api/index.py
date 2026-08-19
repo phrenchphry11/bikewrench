@@ -8,9 +8,11 @@ from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
+from api.strava import router as strava_router
 from engine.report import build_report
 
 app = FastAPI(title="Bike Health Report API")
+app.include_router(strava_router)
 
 # A finite, non-negative float: rejects NaN/Infinity, which Python's JSON
 # parser would otherwise happily accept and feed through the wear math.
