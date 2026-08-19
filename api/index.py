@@ -1,9 +1,7 @@
 """FastAPI entrypoint — Vercel Python serverless function."""
 
-from typing import Annotated
-
 from fastapi import FastAPI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 app = FastAPI(title="Bike Health Report API")
 
@@ -26,11 +24,9 @@ class Baselines(BaseModel):
 
 class ReportRequest(BaseModel):
     rides: list[Ride]
-    bike_type: Annotated[str, Field(alias="bikeType")]  # road | gravel | mtb
+    bike_type: str  # road | gravel | mtb
     conditions: str  # dry | mixed | wet
     baselines: Baselines = Baselines()
-
-    model_config = {"populate_by_name": True}
 
 
 @app.post("/api/report")
