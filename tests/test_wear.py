@@ -228,3 +228,60 @@ class TestReport:
         dry = build_report(self.RIDES, "road", "dry")
         wet = build_report(self.RIDES, "road", "wet")
         assert wet["health_score"] < dry["health_score"]
+
+
+class TestReviewFixes:
+    """Regressions from the post-M2 code review."""
+
+    def test_pct_used_full_precision_matches_status(self):
+        # Raw ratio 1687/2250 rounds to 0.75 but must stay green (< 0.75).
+        result = wear.component_status(get("chain"), 1687, wear.DRY)
+        assert result["pct_used"] < 0.75
+        assert result["status"] == wear.GREEN
+        # Just under the midpoint must not round up to a "100% but due_soon" card.
+        result = wear.component_status(get("chain"), 2249, wear.DRY)
+        assert result["pct_used"] < 1.0
+        assert result["status"] == wear.DUE_SOON
+
+    def test_datetime_ride_dates_accepted_everywhere(self):
+        rides = [
+            ride("2026-01-01", 500),
+            ride("2026-03-05T09:00:00", 500),
+            ride("2026-06-01", 500),
+        ]
+        # No baselines: must not depend on which answers were given.
+        report = build_report(rides, "road", "dry")
+        assert report["first_ride"] == "2026-01-01"
+        assert report["total_miles"] == 1500
+        # Same data with a date baseline must behave identically.
+        with_baseline = build_report(
+            rides, "road", "dry", baselines={"chain_date": "2026-02-01"}
+        )
+        chain = next(c for c in with_baseline["cards"] if c["key"] == "chain")
+        assert chain["used"] == 1000
+
+    def test_bad_ride_date_fails_fast_regardless_of_answers(self):
+        rides = [ride("not-a-date", 500)]
+        with pytest.raises(ValueError):
+            build_report(rides, "road", "dry")
+
+    def test_bike_date_excludes_previous_bikes_rides(self):
+        rides = [
+            ride("2016-08-01", 10000),  # old bike
+            ride("2026-06-01", 100),  # this bike
+        ]
+        report = build_report(
+            rides, "road", "dry", baselines={"bike_date": "2026-01-01"}
+        )
+        assert report["total_miles"] == 100
+        assert report["first_ride"] == "2026-06-01"
+        # Time-based wear starts at the new bike's first ride, not 2016.
+        tape = next(c for c in report["cards"] if c["key"] == "bar_tape")
+        assert tape["used"] < 12
+
+    def test_bike_date_after_all_rides_raises(self):
+        with pytest.raises(ValueError):
+            build_report(
+                [ride("2026-01-01", 100)], "road", "dry",
+                baselines={"bike_date": "2027-01-01"},
+            )

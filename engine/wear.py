@@ -143,7 +143,10 @@ def component_status(component: Component, used: float, conditions: str) -> dict
         "used": round(used, 1),
         "interval_lo": round(lo),
         "interval_hi": round(hi),
-        "pct_used": round(pct_used, 3),
+        # Full precision: status and health score derive from this, so display
+        # rounding is the UI's job — rounding here made boundary cards contradict
+        # their own color.
+        "pct_used": pct_used,
         "status": status,
         "explanation": component.explanation,
     }

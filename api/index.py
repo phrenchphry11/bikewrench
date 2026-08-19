@@ -24,6 +24,9 @@ class Baselines(BaseModel):
     chain_date: str | None = None
     tires_miles_ago: float | None = None
     tires_date: str | None = None
+    # When the bike was acquired / last fully serviced. Rides before this are
+    # a previous bike's and are excluded; time-based wear starts here.
+    bike_date: str | None = None
 
 
 class ReportRequest(BaseModel):

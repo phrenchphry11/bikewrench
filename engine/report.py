@@ -1,6 +1,6 @@
 """Assemble the full Bike Health Report from rides + answers. Pure, no I/O."""
 
-from datetime import date
+from datetime import date, datetime
 
 from engine import wear
 
@@ -10,7 +10,11 @@ _STATUS_ORDER = {wear.OVERDUE: 0, wear.DUE_SOON: 1, wear.GREEN: 2}
 
 
 def _parse_date(s: str) -> date:
-    return date.fromisoformat(s)
+    """Accept ISO dates or datetimes ("2026-03-05", "2026-03-05T09:00:00")."""
+    try:
+        return datetime.fromisoformat(s).date()
+    except ValueError:
+        raise ValueError(f"unparseable date: {s!r}")
 
 
 def miles_since(rides: list[dict], baseline_date: str | None) -> float:
@@ -48,12 +52,29 @@ def build_report(
     """rides: [{date: ISO str, miles: float, hours: float}], must be non-empty.
 
     baselines keys (all optional): chain_miles_ago, chain_date,
-    tires_miles_ago, tires_date. Missing = "not sure" = conservative
-    (component assumed as old as the whole ride history).
+    tires_miles_ago, tires_date, bike_date. Missing = "not sure" =
+    conservative (component assumed as old as the whole ride history).
+    bike_date = when this bike was acquired (or last fully serviced):
+    earlier rides belong to a previous bike and are excluded entirely,
+    and time-based wear starts there instead of at the first ride in
+    the Strava history.
     """
     if not rides:
         raise ValueError("rides must be non-empty")
     baselines = baselines or {}
+
+    # Parse every ride date up front: bad dates fail fast and consistently,
+    # and first/last ride are true date comparisons, not string ones.
+    rides = [
+        {**r, "date": _parse_date(r["date"]).isoformat()} for r in rides
+    ]
+
+    bike_date = baselines.get("bike_date")
+    if bike_date is not None:
+        cutoff = _parse_date(bike_date)
+        rides = [r for r in rides if _parse_date(r["date"]) >= cutoff]
+        if not rides:
+            raise ValueError("no rides on or after the bike's start date")
 
     first_ride = min(r["date"] for r in rides)
     last_ride = max(r["date"] for r in rides)
