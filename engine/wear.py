@@ -1,6 +1,9 @@
 """Wear table and pure per-component wear math.
 
-Encodes the wear table from product_spec.md verbatim. Scoring uses the midpoint
+Intervals and multipliers encode the product_spec.md wear table verbatim; the
+explanation copy intentionally diverges from the spec's hooks — per product
+direction it describes inspection cues (what worn looks/sounds like), not
+just why the part matters. Scoring uses the midpoint
 of each interval range; the UI shows the range. The wet-condition multiplier
 shortens the interval (dry = 1.0, wet = table value, mixed = halfway between).
 No I/O anywhere in this module.
@@ -47,58 +50,58 @@ class Component:
 WEAR_TABLE: tuple[Component, ...] = (
     Component(
         "chain", "Chain", "miles", (2000, 2500), 0.7,
-        "A worn chain eats your cassette — a $20 part protecting a $120 one.",
+        "Check it with a $10 chain wear gauge — replace at 0.75% stretch. Skipping under hard pedaling means it's already eating your cassette.",
         baseline_key="chain",
     ),
     Component(
         "cassette", "Cassette", "miles", (4000, 6000), 0.75,
-        "Usually replaced with your 2nd or 3rd chain.",
+        "If a new chain skips under power, or the teeth look like shark fins, the cassette is done.",
     ),
     Component(
         "tires_rear", "Rear tire", "miles", (1500, 3000), 0.9,
-        "Rear wears ~2× faster than front. Check for squaring-off.",
+        "Look for a squared-off center ridge, threads showing through, or flats coming more often than they used to.",
         baseline_key="tires",
     ),
     Component(
         "tires_front", "Front tire", "miles", (3000, 5000), 0.9,
-        "Front tires last roughly twice as long as rears.",
+        "Check for cracked, dry sidewalls and embedded glass — front grip is what holds you up in corners.",
         baseline_key="tires",
     ),
     Component(
         "brake_pads_rim", "Brake pads (rim)", "miles", (1500, 3000), 0.6,
-        "Wet grit is sandpaper for pads.",
+        "Replace when the grooves in the pad face have worn smooth, or you hear grinding — embedded grit scores the rim itself.",
         bike_types=frozenset({ROAD}),
     ),
     Component(
         "brake_pads_disc", "Brake pads (disc)", "miles", (3000, 6000), 0.7,
-        "Disc pads wear faster in gritty, wet riding.",
+        "Pull the wheel and sight the pads: under ~1.5 mm of material, or a metallic scrape when braking, means replace now.",
         bike_types=frozenset({GRAVEL, MTB}),
     ),
     Component(
         "bar_tape", "Bar tape", "months", (12, 12), None,
-        "Comfort + hidden cable inspection opportunity.",
+        "Shiny, torn, or slick-when-wet tape is due — and unwrapping is the only time your brake levers' cables get seen.",
         bike_types=DROP_BAR_BIKES,
     ),
     Component(
         "cables", "Cables & housing", "months", (12, 24), 0.8,
-        "Sluggish shifting is usually cables, not the derailleur.",
+        "Shifting that stays sluggish after a barrel-adjuster tweak usually means corroded cables, not a bad derailleur.",
     ),
     Component(
         "chainrings", "Chainrings", "miles", (10000, 15000), None,
-        "Chainrings outlast several chains and cassettes.",
+        "Shark-fin shaped teeth, or a chain that falls off the ring under load, mean the ring is worn out.",
     ),
     Component(
         "bottom_bracket", "Bottom bracket", "miles", (5000, 10000), 0.7,
-        "Creaking? It's earlier than you think.",
+        "Creaks or clicks from the crank area, or side-to-side play when you rock the crank arms by hand.",
     ),
     Component(
         "sealant", "Tubeless sealant", "months", (3, 4), None,
-        "Dries out whether you ride or not.",
+        "Shake the wheel and listen for sloshing — silence means it's dried out. Punctures that won't seal are the giveaway.",
         bike_types=TUBELESS_BIKES,
     ),
     Component(
         "safety_check", "Bike fit / safety check", "months", (12, 12), None,
-        "An annual once-over at your local shop catches what you can't.",
+        "Any new creak, rattle, brake rub, or numb hands you've been ignoring — a shop once-over catches what you can't.",
     ),
 )
 
