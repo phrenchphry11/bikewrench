@@ -51,20 +51,46 @@ bd close <id>         # Complete work
 <!-- END BEADS INTEGRATION -->
 
 
+## Source of Truth
+
+`product_spec.md` in the repo root is the product source of truth (Bike Health Report v0).
+Its cutlines are binding: no Garmin CSV, no HealthKit, no accounts/history, no email
+reminders, no multiple bikes, no shop integrations, no photo recognition, no Strava
+OAuth in v0.
+
 ## Build & Test
 
-_Add your build and test commands here_
-
 ```bash
-# Example:
-# npm install
-# npm test
+pip install -r requirements.txt   # fastapi, uvicorn, pytest
+pytest tests/                     # wear engine tests — must be green before UI work
+uvicorn api.index:app --reload    # backend on :8000
+
+cd frontend
+npm install
+npm run dev                       # Vite dev server, proxies /api → localhost:8000
+npm run build                     # production build (also type-checks)
 ```
 
 ## Architecture Overview
 
-_Add a brief overview of your project architecture_
+- `frontend/` — Vite + React + TypeScript SPA. Parses the Strava `activities.csv`
+  client-side with Papaparse (only date / type / distance / moving time / gear
+  columns; GPX blobs ignored), then POSTs compact ride summaries to the API.
+- `api/index.py` — FastAPI app (Vercel Python serverless entrypoint). `POST /api/report`
+  takes `{rides, bikeType, conditions, baselines}` and returns the report JSON.
+- `engine/` — pure-Python wear engine: `wear.py` (WEAR_TABLE constant from the spec's
+  wear table + pure functions), `report.py` (health score, urgency-sorted cards).
+  No I/O, fully unit-tested in `tests/`.
+- Deploy: single Vercel project — static frontend build + Python function.
 
 ## Conventions & Patterns
 
-_Add your project-specific conventions here_
+- **Wear-engine correctness is never cut.** If time runs short, cut UI polish, never
+  the numbers or their tests. Scoring uses the midpoint of each interval range; the UI
+  shows the range; wet-condition multipliers shorten the interval.
+- **Milestone review gates:** pause at every milestone boundary (M0–M5 and deploy),
+  summarize what was built and how it was verified, and wait for the user's go-ahead.
+- Track all work as bd issues; close an issue only after its verification step passes.
+- No git remote is configured yet, so the beads "push to remote" session rule applies
+  only once a remote exists; until then, committing locally completes a session.
+- "Try with sample data" must always work — the reviewer demos without a Strava account.
