@@ -1,51 +1,6 @@
-# Agent Instructions
+# Project Instructions for AI Agents
 
-This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
-
-> **Architecture in one line:** Issues live in a local Dolt database
-> (`.beads/dolt/`); cross-machine sync uses `bd dolt push/pull` (a
-> git-compatible protocol), stored under `refs/dolt/data` on your git
-> remote — separate from `refs/heads/*` where your code lives.
-> `.beads/issues.jsonl` is a passive export, not the wire protocol.
->
-> See [SYNC_CONCEPTS.md](https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md)
-> for the one-screen overview and anti-patterns (don't treat JSONL as the
-> source of truth; don't `bd import` during normal operation; don't
-> reach for third-party Dolt hosting before trying the default).
-
-## Quick Reference
-
-```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work atomically
-bd close <id>         # Complete work
-bd dolt push          # Push beads data to remote
-```
-
-## Non-Interactive Shell Commands
-
-**ALWAYS use non-interactive flags** with file operations to avoid hanging on confirmation prompts.
-
-Shell commands like `cp`, `mv`, and `rm` may be aliased to include `-i` (interactive) mode on some systems, causing the agent to hang indefinitely waiting for y/n input.
-
-**Use these forms instead:**
-```bash
-# Force overwrite without prompting
-cp -f source dest           # NOT: cp source dest
-mv -f source dest           # NOT: mv source dest
-rm -f file                  # NOT: rm file
-
-# For recursive operations
-rm -rf directory            # NOT: rm -r directory
-cp -rf source dest          # NOT: cp -r source dest
-```
-
-**Other commands that may prompt:**
-- `scp` - use `-o BatchMode=yes` for non-interactive
-- `ssh` - use `-o BatchMode=yes` to fail instead of prompting
-- `apt-get` - use `-y` flag
-- `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
+This file provides instructions and context for AI coding agents working on this project.
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:7510c1e2 -->
 ## Beads Issue Tracker
@@ -94,3 +49,50 @@ bd close <id>         # Complete work
 - NEVER say "ready to push when you are" - YOU must push
 - If push fails, resolve and retry until it succeeds
 <!-- END BEADS INTEGRATION -->
+
+
+## Source of Truth
+
+`product_spec.md` in the repo root is the product source of truth (Bike Health Report v0).
+`ROADMAP.md` lists every milestone (M0–M5, press release, deploy), its bd issue, and the
+v1+/later items — read it to see where the build stands and what comes next.
+Its cutlines are binding: no Garmin CSV, no HealthKit, no accounts/history, no email
+reminders, no multiple bikes, no shop integrations, no photo recognition, no Strava
+OAuth in v0.
+
+## Build & Test
+
+```bash
+pip install -r requirements.txt   # fastapi, uvicorn, pytest
+pytest tests/                     # wear engine tests — must be green before UI work
+uvicorn api.index:app --reload    # backend on :8000
+
+cd frontend
+npm install
+npm run dev                       # Vite dev server, proxies /api → localhost:8000
+npm run build                     # production build (also type-checks)
+```
+
+## Architecture Overview
+
+- `frontend/` — Vite + React + TypeScript SPA. Parses the Strava `activities.csv`
+  client-side with Papaparse (only date / type / distance / moving time / gear
+  columns; GPX blobs ignored), then POSTs compact ride summaries to the API.
+- `api/index.py` — FastAPI app (Vercel Python serverless entrypoint). `POST /api/report`
+  takes `{rides, bikeType, conditions, baselines}` and returns the report JSON.
+- `engine/` — pure-Python wear engine: `wear.py` (WEAR_TABLE constant from the spec's
+  wear table + pure functions), `report.py` (health score, urgency-sorted cards).
+  No I/O, fully unit-tested in `tests/`.
+- Deploy: single Vercel project — static frontend build + Python function.
+
+## Conventions & Patterns
+
+- **Wear-engine correctness is never cut.** If time runs short, cut UI polish, never
+  the numbers or their tests. Scoring uses the midpoint of each interval range; the UI
+  shows the range; wet-condition multipliers shorten the interval.
+- **Milestone review gates:** pause at every milestone boundary (M0–M5 and deploy),
+  summarize what was built and how it was verified, and wait for the user's go-ahead.
+- Track all work as bd issues; close an issue only after its verification step passes.
+- No git remote is configured yet, so the beads "push to remote" session rule applies
+  only once a remote exists; until then, committing locally completes a session.
+- "Try with sample data" must always work — the reviewer demos without a Strava account.
