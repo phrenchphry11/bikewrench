@@ -108,22 +108,63 @@ export function mapOverpassShops(elements: OverpassElement[], origin: Coords): B
     .slice(0, MAX_SHOPS)
 }
 
+const ATTEMPT_TIMEOUT_MS = 9_000
+
+function cacheKey(origin: Coords): string {
+  // ~100m grid: close-enough repeat searches hit the cache
+  return `bikewrench_shops:${origin.lat.toFixed(3)},${origin.lon.toFixed(3)}`
+}
+
+function readCache(key: string): BikeShop[] | null {
+  if (typeof sessionStorage === 'undefined') return null
+  try {
+    const raw = sessionStorage.getItem(key)
+    return raw ? (JSON.parse(raw) as BikeShop[]) : null
+  } catch {
+    return null
+  }
+}
+
 export async function fetchNearbyShops(origin: Coords, fetcher: Fetcher = fetch): Promise<BikeShop[]> {
-  const query = `[out:json][timeout:15];nwr["shop"="bicycle"](around:${RADIUS_METERS},${origin.lat},${origin.lon});out center tags;`
-  for (const mirror of OVERPASS_MIRRORS) {
-    let res: Response
+  const key = cacheKey(origin)
+  const cached = readCache(key)
+  if (cached) return cached
+
+  const query = `[out:json][timeout:8];nwr["shop"="bicycle"](around:${RADIUS_METERS},${origin.lat},${origin.lon});out center tags;`
+
+  // Race every mirror; first success wins and the losers are aborted. The
+  // primary instance rate-limits and stalls under load, so waiting for it
+  // before trying a mirror was the dominant cost of this lookup.
+  const controllers = OVERPASS_MIRRORS.map(() => new AbortController())
+  const attempts = OVERPASS_MIRRORS.map(async (mirror, i) => {
+    const timer = setTimeout(() => controllers[i].abort(), ATTEMPT_TIMEOUT_MS)
     try {
-      res = await fetcher(mirror, {
+      const res = await fetcher(mirror, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ data: query }),
+        signal: controllers[i].signal,
       })
-    } catch {
-      continue // network/CORS failure — try the next mirror
+      if (!res.ok) throw new Error(`mirror ${mirror} -> ${res.status}`)
+      const body = (await res.json()) as { elements?: OverpassElement[] }
+      return { shops: mapOverpassShops(body.elements ?? [], origin), winner: i }
+    } finally {
+      clearTimeout(timer)
     }
-    if (!res.ok) continue // rate-limited or unhappy mirror — try the next
-    const body = (await res.json()) as { elements?: OverpassElement[] }
-    return mapOverpassShops(body.elements ?? [], origin)
+  })
+
+  try {
+    const { shops, winner } = await Promise.any(attempts)
+    controllers.forEach((c, i) => i !== winner && c.abort())
+    if (typeof sessionStorage !== 'undefined') {
+      try {
+        sessionStorage.setItem(key, JSON.stringify(shops))
+      } catch {
+        /* cache is best-effort */
+      }
+    }
+    return shops
+  } catch {
+    throw new Error('The shop lookup services are all busy — try again in a few minutes.')
   }
-  throw new Error('The shop lookup services are all busy — try again in a few minutes.')
 }

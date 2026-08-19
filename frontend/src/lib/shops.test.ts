@@ -84,18 +84,24 @@ describe('fetchNearbyShops', () => {
     expect(sentBody).toContain('40')
   })
 
-  it('falls through rate-limited mirrors to a working one', async () => {
+  it('races mirrors: a slow primary loses to a fast healthy mirror', async () => {
     const tried: string[] = []
-    const fetcher = (async (url: unknown) => {
+    const fetcher = (async (url: unknown, init?: RequestInit) => {
       tried.push(String(url))
-      if (tried.length === 1) return new Response('', { status: 406 })
-      if (tried.length === 2) throw new TypeError('network error')
-      return new Response(JSON.stringify({ elements: [el()] }), { status: 200 })
+      if (String(url).includes('overpass-api.de')) {
+        // hang until aborted, like a throttled primary
+        return new Promise<Response>((_, reject) => {
+          init?.signal?.addEventListener('abort', () => reject(new Error('aborted')))
+        })
+      }
+      if (String(url).includes('kumi')) {
+        return new Response(JSON.stringify({ elements: [el()] }), { status: 200 })
+      }
+      return new Response('', { status: 406 })
     }) as typeof fetch
-    const shops = await fetchNearbyShops(ORIGIN, fetcher)
+    const shops = await fetchNearbyShops({ ...ORIGIN, lat: 41.0 }, fetcher)
     expect(shops).toHaveLength(1)
-    expect(tried).toHaveLength(3)
-    expect(new Set(tried).size).toBe(3) // three distinct mirrors
+    expect(tried).toHaveLength(3) // all fired in parallel
   })
 
   it('friendly error only after every mirror fails', async () => {
@@ -104,8 +110,31 @@ describe('fetchNearbyShops', () => {
       calls++
       return new Response('', { status: 504 })
     }) as typeof fetch
-    await expect(fetchNearbyShops(ORIGIN, fetcher)).rejects.toThrow(/busy/)
+    await expect(fetchNearbyShops({ ...ORIGIN, lat: 42.0 }, fetcher)).rejects.toThrow(/busy/)
     expect(calls).toBe(3)
+  })
+
+  it('serves repeat searches from the session cache', async () => {
+    const store = new Map<string, string>()
+    ;(globalThis as Record<string, unknown>).sessionStorage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+      removeItem: (k: string) => void store.delete(k),
+    }
+    try {
+      let calls = 0
+      const fetcher = (async () => {
+        calls++
+        return new Response(JSON.stringify({ elements: [el()] }), { status: 200 })
+      }) as typeof fetch
+      const first = await fetchNearbyShops({ ...ORIGIN, lat: 43.0 }, fetcher)
+      const callsAfterFirst = calls
+      const second = await fetchNearbyShops({ ...ORIGIN, lat: 43.0 }, fetcher)
+      expect(second).toEqual(first)
+      expect(calls).toBe(callsAfterFirst) // no new network calls
+    } finally {
+      delete (globalThis as Record<string, unknown>).sessionStorage
+    }
   })
 })
 
